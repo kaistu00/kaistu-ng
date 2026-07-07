@@ -1,1 +1,34 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global SCSS styles */
+
+/* Color variables */
+$cyber-dark: #010103;
+$cyber-neon: #00ff00;
+$cyber-neon-dim: rgba(0, 255, 0, 0.1);
+$cyber-cyan: #00e5ff;
+$cyber-cyan-dim: rgba(0, 229, 255, 0.1);
+$cyber-orange: #ff6c00;
+$cyber-orange-dim: rgba(255, 108, 0, 0.1);
+$cyber-purple: #bd00ff;
+$cyber-gray: #cbd5e1;
+
+/* Font variables */
+$font-orbit: 'Rajdhani', sans-serif;
+$font-sans: 'Inter', sans-serif;
+$font-mono: 'Fira Code', monospace;
+
+/* Global reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background-color: $cyber-dark;
+  color: white;
+  font-family: $font-sans;
+  overflow-x: hidden;
+}
+

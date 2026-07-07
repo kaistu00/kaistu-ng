@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaistu - Estudio de Animación Inteligente</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            dark: '#010103',
+                            neon: '#00ff00',
+                            neonDim: 'rgba(0, 255, 0, 0.1)',
+                            cyan: '#00e5ff',
+                            cyanDim: 'rgba(0, 229, 255, 0.1)',
+                            orange: '#ff6c00',
+                            orangeDim: 'rgba(255, 108, 0, 0.1)',
+                            purple: '#bd00ff',
+                            gray: '#cbd5e1'
+                        }
+                    },
+                    fontFamily: {
+                        orbit: ['Rajdhani', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Optimización de rendimiento para pantallas de ultra-alta definición 4K */
+        body {
+            background-color: #010103;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .cyber-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        /* Scrollbar Neón sutil */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #010103;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 3px;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        /* Grid cyberpunk de fondo con aceleración por hardware */
+        .cyber-grid {
+            background-size: 80px 80px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.008) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.008) 1px, transparent 1px);
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        /* Glows e Iluminaciones de Tarjetas */
+        .neon-glow-green {
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.8), 0 0 30px rgba(0, 255, 0, 0.3);
+        }
+        .neon-glow-cyan {
+            text-shadow: 0 0 15px rgba(0, 229, 255, 0.8), 0 0 30px rgba(0, 229, 255, 0.3);
+        }
+        .neon-glow-orange {
+            text-shadow: 0 0 15px rgba(255, 108, 0, 0.8), 0 0 30px rgba(255, 108, 0, 0.3);
+        }
+        
+        .neon-border-green {
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.08);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        .neon-border-cyan {
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+        }
+        .neon-border-orange {
+            box-shadow: 0 0 20px rgba(255, 108, 0, 0.08);
+            border: 1px solid rgba(255, 108, 0, 0.3);
+        }
+
+        /* Tarjetas de alto contraste con desenfoque extremo para legibilidad sobre el vídeo */
+        .cyber-card {
+            background: rgba(1, 1, 3, 0.9);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        /* Escudo de contraste radial oscuro para aislar el texto en 4K */
+        .text-shield {
+            background: radial-gradient(circle, rgba(1,1,3,0.7) 0%, rgba(1,1,3,0) 80%);
+        }
+
+        /* Puntero de alta precisión */
+        #custom-pointer {
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #00ff00;
+            border-radius: 50%;
+            position: fixed;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.2s, height 0.2s, background-color 0.2s, border-color 0.2s;
+            mix-blend-mode: difference;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            #custom-pointer {
+                display: block;
+            }
+        }
+
+        /* Viñeta cinematográfica */
+        .vignette-overlay {
+            background: radial-gradient(circle, transparent 15%, rgba(1, 1, 3, 0.85) 100%);
+        }
+
+        /* Optimización de renderizado para el elemento de video */
+        #bg-video {
+            transform: translate3d(0, 0, 0);
+            will-change: transform;
+        }
+    </style>
+</head>
+<body class="text-white selection:bg-cyber-neon selection:text-black">
+
+    <!-- Terminal de carga inicial (Pre-loader del núcleo de vídeo) -->
+    <div id="loader-terminal" class="fixed inset-0 z-[100] bg-[#010103] flex flex-col justify-center items-center font-mono p-6 transition-all duration-1000">
+        <div class="max-w-lg w-full bg-black/85 border border-cyber-neon/30 p-8 rounded-lg space-y-6 shadow-[0_0_50px_rgba(0,255,0,0.15)] relative">
+            <div class="absolute top-4 right-4 flex space-x-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-cyber-neon/80"></span>
+            </div>
+            
+            <div class="text-cyber-neon text-xs font-bold uppercase tracking-widest" data-i18n="loader_title">// SINCRO DE SISTEMA KAISTU</div>
+            
+            <div class="space-y-2 text-xs text-gray-400">
+                <p class="flex items-center gap-2">
+                    <span class="text-cyber-neon">&gt;</span> <span data-i18n="loader_p1">Conectando con clúster cuántico...</span> 
+                    <span class="text-cyber-neon">OK</span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="text-cyber-neon">&gt;</span> <span data-i18n="loader_p2">Inicializando interpolación de fotogramas...</span> 
+                    <span class="text-cyber-neon">OK</span>
+                </p>
+                <p class="flex items-center gap-2">
+                    <span class="text-cyber-neon">&gt;</span> <span data-i18n="loader_p3">Precargando kaistu_core_bg.mp4...</span>
+                </p>
+            </div>
+
+            <div class="space-y-2 pt-2">
+                <div class="flex justify-between text-xs font-bold">
+                    <span class="text-gray-400" data-i18n="loader_progress_text">CALIBRANDO BUFFER DE SCROLL</span>
+                    <span id="load-percentage" class="text-cyber-neon font-bold">0%</span>
+                </div>
+                <div class="w-full h-2 bg-white/5 border border-white/10 rounded-full p-0.5 overflow-hidden">
+                    <div id="load-progress-bar" class="h-full bg-cyber-neon rounded-full w-0 shadow-[0_0_10px_#00ff00] transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <div class="text-[10px] text-gray-500 text-center uppercase tracking-widest pt-2 animate-pulse" data-i18n="loader_boot">
+                Estableciendo enlace neural
+            </div>
+        </div>
+    </div>
+
+    <!-- Puntero Premium -->
+    <div id="custom-pointer" class="hidden lg:block"></div>
+
+    <!-- Modal Cyberpunk para notificaciones in-app -->
+    <div id="cyber-modal" class="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-500">
+        <div class="max-w-md w-full cyber-card neon-border-cyan p-8 rounded-xl space-y-6 text-center transform scale-95 transition-all duration-500" id="modal-container">
+            <div class="w-16 h-16 bg-cyber-cyanDim border border-cyber-cyan/30 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                <svg class="w-8 h-8 text-cyber-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <div class="space-y-2">
+                <h3 class="cyber-title text-2xl text-white tracking-wider" id="modal-title" data-i18n="modal_title">Iniciando Stream de Datos</h3>
+                <p class="text-sm text-gray-400 leading-relaxed" id="modal-text" data-i18n="modal_text">Conectando al servidor descentralizado de Kaistu... Redirigiendo al primer capítulo de la animación viva.</p>
+            </div>
+            <button onclick="closeCyberModal()" class="w-full py-3 bg-cyber-cyan text-black font-mono font-bold text-xs uppercase tracking-widest rounded hover:shadow-[0_0_20px_#00e5ff] transition duration-300" data-i18n="modal_close">
+                Confirmar Acceso
+            </button>
+        </div>
+    </div>
+
+    <!-- Contenedor del Vídeo de Fondo Fijo -->
+    <div class="fixed top-0 left-0 w-full h-full -z-20 overflow-hidden bg-[#010103]">
+        <video id="bg-video" 
+               class="w-full h-full object-cover brightness-[0.5] contrast-[1.15]" 
+               muted 
+               playsinline 
+               preload="auto">
+               <source src="../kaistu_core_bg.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Viñeta cinematográfica sobre el vídeo -->
+    <div class="fixed top-0 left-0 w-full h-full -z-15 pointer-events-none vignette-overlay"></div>
+
+    <!-- Canvas de partículas reactivo -->
+    <canvas id="interactive-canvas" class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none opacity-30"></canvas>
+
+    <!-- Grid de fondo decorativo -->
+    <div class="fixed top-0 left-0 w-full h-full -z-10 pointer-events-none cyber-grid opacity-15"></div>
+
+    <!-- Barra de Navegación Fija -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-[#010103]/60 border-b border-white/5 backdrop-blur-xl px-6 py-5 md:px-12 flex justify-between items-center transition-all duration-300">
+        <div class="flex items-center space-x-3 group">
+            <span class="cyber-title text-2xl md:text-3xl font-bold tracking-widest text-white transition-all duration-300 group-hover:scale-105">
+                KAI<span class="text-cyber-neon neon-glow-green" id="logo-accent">STU</span>
+            </span>
+            <span class="px-3 py-0.5 text-[9px] font-mono tracking-widest border border-cyber-neon/40 text-cyber-neon rounded uppercase bg-cyber-neonDim" id="header-badge" data-i18n="nav_badge">
+                Estudio de Animación
+            </span>
+        </div>
+        
+        <!-- Controles: Selector de Idioma (Segmentado Premium) e Indicadores de Sincronización -->
+        <div class="flex items-center space-x-6">
+            <!-- Selector de Idioma Segmentado -->
+            <div class="bg-black/85 border border-white/10 rounded-lg p-1 flex items-center space-x-1 font-mono text-xs">
+                <button onclick="setLanguage('es')" id="lang-es" class="px-2.5 py-1 rounded transition-all duration-300 font-bold bg-cyber-neon text-black">ES</button>
+                <button onclick="setLanguage('en')" id="lang-en" class="px-2.5 py-1 rounded transition-all duration-300 text-gray-400 hover:text-white">EN</button>
+                <button onclick="setLanguage('ja')" id="lang-ja" class="px-2.5 py-1 rounded transition-all duration-300 text-gray-400 hover:text-white">JA</button>
+            </div>
+
+            <!-- Datos del motor de Scroll -->
+            <div class="hidden lg:flex flex-col items-end text-[10px] font-mono tracking-wider text-gray-400">
+                <span class="flex items-center gap-1.5">
+                    <span id="video-state-dot" class="w-2.5 h-2.5 rounded-full bg-cyber-neon animate-pulse shadow-[0_0_10px_#00ff00]"></span>
+                    <span data-i18n="nav_sync">SINCRO DE MOTOR</span>: <span id="sync-percentage" class="text-cyber-neon font-bold">0%</span>
+                </span>
+                <span><span data-i18n="nav_time">TIEMPO NÚCLEO</span>: <span id="frame-counter" class="text-white font-bold">0.00s</span> / 10.00s</span>
+            </div>
+            
+            <a href="#section-5" class="px-5 py-2.5 border border-cyber-neon/40 bg-cyber-neonDim/30 hover:bg-cyber-neon hover:text-black hover:shadow-[0_0_20px_#00ff00] text-cyber-neon font-mono text-xs uppercase tracking-widest rounded transition-all duration-300" data-i18n="nav_cta">
+                Unirse a la Guerra
+            </a>
+        </div>
+    </header>
+
+    <!-- Barra de Progreso Vertical -->
+    <div class="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col space-y-4 items-center">
+        <span class="text-[9px] font-mono tracking-widest text-cyber-neon rotate-90 mb-6 origin-center translate-y-3 uppercase" id="progress-indicator-text">Intro</span>
+        <div class="w-1 h-36 bg-white/10 rounded-full relative overflow-hidden">
+            <div id="vertical-progress-bar" class="w-full bg-cyber-neon absolute top-0 left-0 transition-all duration-100 h-0" style="box-shadow: 0 0 10px #00ff00;"></div>
+        </div>
+        <div class="flex flex-col space-y-2 text-[9px] font-mono text-gray-500 mt-2">
+            <a href="#section-1" class="dot-nav w-2.5 h-2.5 rounded-full bg-cyber-neon border border-cyber-neon" data-section="0"></a>
+            <a href="#section-2" class="dot-nav w-2 h-2 rounded-full bg-white/20 hover:bg-cyber-neon/50 transition" data-section="1"></a>
+            <a href="#section-3" class="dot-nav w-2 h-2 rounded-full bg-white/20 hover:bg-cyber-neon/50 transition" data-section="2"></a>
+            <a href="#section-4" class="dot-nav w-2 h-2 rounded-full bg-white/20 hover:bg-cyber-neon/50 transition" data-section="3"></a>
+            <a href="#section-5" class="dot-nav w-2 h-2 rounded-full bg-white/20 hover:bg-cyber-neon/50 transition" data-section="4"></a>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE SCROLL (Foco en el Vídeo y Legibilidad 4K) -->
+    <main id="scroll-container" class="relative z-10 w-full">
+
+        <!-- SECCIÓN 1: BIENVENIDO A KAISTU (Video: 0.0s - 2.0s - Logo y túnel de datos) -->
+        <section id="section-1" class="scrolly-section min-h-[130vh] flex flex-col justify-center items-center px-6 md:px-12 relative border-b border-white/5 py-32 text-shield">
+            <div class="max-w-5xl text-center z-10 space-y-8">
+                <div class="animate-element opacity-0 translate-y-8">
+                    <span class="px-4 py-1.5 text-xs md:text-sm font-mono tracking-[0.25em] text-cyber-neon border border-cyber-neon/30 bg-cyber-neonDim rounded-full inline-block" data-i18n="sec1_badge">
+                        [ SERIES VIVAS DE ANIME ]
+                    </span>
+                </div>
+                
+                <h1 class="animate-element opacity-0 translate-y-8 cyber-title text-5xl sm:text-7xl md:text-8xl xl:text-9xl tracking-tight leading-none text-white" data-i18n="sec1_h1">
+                    BIENVENIDO A <span class="text-cyber-neon neon-glow-green">KAISTU</span>
+                </h1>
+                
+                <h2 class="animate-element opacity-0 translate-y-8 text-xl sm:text-2xl md:text-3xl font-mono text-gray-300 font-light tracking-wide uppercase" data-i18n="sec1_h2">
+                    Estudio de Animación Inteligente.
+                </h2>
+                
+                <p class="animate-element opacity-0 translate-y-8 text-lg sm:text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto italic font-light" data-i18n="sec1_p">
+                    "No mires la historia. Créala."
+                </p>
+                
+                <div class="animate-element opacity-0 translate-y-8 flex flex-col sm:flex-row gap-5 justify-center items-center pt-4">
+                    <a href="https://youtube.com" target="_blank" class="cyber-card flex items-center gap-3 px-8 py-5 rounded-lg border border-cyber-neon/40 text-cyber-neon bg-cyber-neonDim/10 hover:bg-cyber-neon hover:text-black hover:shadow-[0_0_25px_#00ff00] font-mono uppercase text-sm md:text-base tracking-widest transition-all duration-300 w-full sm:w-auto justify-center" data-i18n="sec1_btn1">
+                        Suscríbete en YouTube
+                    </a>
+                    <a href="https://discord.gg" target="_blank" class="cyber-card flex items-center gap-3 px-8 py-5 rounded-lg border border-white/10 text-white bg-white/5 hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] font-mono uppercase text-sm md:text-base tracking-widest transition-all duration-300 w-full sm:w-auto justify-center" data-i18n="sec1_btn2">
+                        Únete al Discord
+                    </a>
+                </div>
+            </div>
+
+            <!-- Indicador Scroll para 4K -->
+            <div class="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 hover:opacity-100 transition duration-300">
+                <span class="text-[10px] md:text-xs font-mono tracking-[0.3em] text-cyber-neon uppercase animate-pulse" data-i18n="sec1_scroll">Sincronizar y bajar</span>
+                <div class="w-1.5 h-10 bg-white/10 rounded-full relative overflow-hidden">
+                    <div class="w-full h-1/2 bg-cyber-neon absolute top-0 left-0 rounded-full animate-bounce"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: TÚ ERES EL MOTOR (Video: 2.0s - 4.0s - Silueta y lluvia código) -->
+        <section id="section-2" class="scrolly-section min-h-[130vh] flex flex-col justify-center items-center px-6 md:px-12 relative border-b border-white/5 py-32 text-shield">
+            <div class="max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20 items-center z-10 w-full">
+                
+                <div class="lg:col-span-7 space-y-8 text-left">
+                    <h2 class="animate-element opacity-0 translate-y-8 cyber-title text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white leading-tight" data-i18n="sec2_h2">
+                        TÚ ERES EL <span class="text-cyber-neon neon-glow-green">MOTOR</span>
+                    </h2>
+                    
+                    <p class="animate-element opacity-0 translate-y-8 text-lg sm:text-xl xl:text-2xl text-gray-200 leading-relaxed font-light" data-i18n="sec2_p1">
+                        El nivel de poder y las habilidades de nuestro protagonista están vinculados matemáticamente a nuestros suscriptores de YouTube. <strong>Si la comunidad crece, el héroe evoluciona.</strong>
+                    </p>
+                    <p class="animate-element opacity-0 translate-y-8 text-base xl:text-lg text-gray-400 leading-relaxed" data-i18n="sec2_p2">
+                        Cada hito de suscripción desbloquea nuevas redes neuronales en nuestro clúster de renderizado, forzando a los guionistas a reescribir las capacidades del personaje en el próximo episodio en producción.
+                    </p>
+                </div>
+
+                <!-- Tarjeta Interactiva / Simulador de Suscriptores -->
+                <div class="lg:col-span-5 animate-element opacity-0 translate-y-8 w-full">
+                    <div class="cyber-card neon-border-green p-8 md:p-10 rounded-2xl relative overflow-hidden shadow-2xl">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-cyber-neon/5 rounded-full blur-3xl"></div>
+                        <div class="flex justify-between items-center mb-8">
+                            <span class="font-mono text-xs text-cyber-neon tracking-widest">[ ENGINE_METRICS ]</span>
+                            <span class="font-mono text-[10px] px-3 py-1 bg-cyber-neonDim text-cyber-neon border border-cyber-neon/30 rounded-md uppercase animate-pulse">Online</span>
+                        </div>
+                        
+                        <div class="space-y-6 mb-8">
+                            <div>
+                                <div class="text-[10px] font-mono text-gray-500 uppercase tracking-widest" data-i18n="sec2_card_title">Suscriptores de la Comunidad</div>
+                                <div class="text-3xl md:text-4xl xl:text-5xl font-bold font-mono tracking-tight text-white mt-2">
+                                    <span id="sub-counter">142,850</span> <span class="text-cyber-neon text-lg md:text-xl font-light">/ 150K</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-mono text-gray-300 mb-2">
+                                    <span data-i18n="sec2_card_lvl">NIVEL DEL HÉROE</span>
+                                    <span id="hero-level-tag" class="text-cyber-neon font-bold">LVL 42</span>
+                                </div>
+                                <div class="w-full h-4 bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                                    <div id="level-progress-bar" class="h-full bg-cyber-neon rounded-full transition-all duration-500" style="width: 78%; box-shadow: 0 0 10px #00ff00;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botón simulador interactivo -->
+                        <button id="sim-btn" class="w-full py-4 bg-cyber-neon text-black font-mono font-bold text-xs md:text-sm uppercase tracking-widest rounded-lg hover:shadow-[0_0_25px_#00ff00] transition duration-300" data-i18n="sec2_card_btn">
+                            Simular Suscripción (+100)
+                        </button>
+                        
+                        <div id="sim-feedback" class="h-6 mt-4 text-center text-xs md:text-sm font-mono text-cyber-neon opacity-0 transition-opacity duration-300" data-i18n="sec2_card_feedback">
+                            ¡SINCROESTRUCTURA ALCANZADA! +5 Puntos de Poder
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: LA GUERRA DEL CANON (Video: 4.0s - 6.0s - Reactor de Likes vs Shares) -->
+        <section id="section-3" class="scrolly-section min-h-[130vh] flex flex-col justify-center items-center px-6 md:px-12 relative border-b border-white/5 py-32 text-shield">
+            <div class="max-w-6xl w-full text-center z-10 space-y-16">
+                <div class="space-y-6 max-w-4xl mx-auto">
+                    <h2 class="animate-element opacity-0 translate-y-8 cyber-title text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white" data-i18n="sec3_h2">
+                        LA GUERRA DEL <span class="text-cyber-cyan neon-glow-cyan">CANON</span>
+                    </h2>
+                    
+                    <p class="animate-element opacity-0 translate-y-8 text-lg sm:text-xl xl:text-2xl text-gray-200 font-light leading-relaxed" data-i18n="sec3_p">
+                        Al final de cada episodio, la historia se rompe. No hay decisiones correctas, solo la voluntad de la mayoría en una batalla directa de interacciones que alimentan nuestro reactor cuántico de renderizado.
+                    </p>
+                </div>
+
+                <!-- Columnas de Selección de Ruta (Likes vs Shares alineadas con los colores del vídeo) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 xl:gap-12 text-left w-full">
+                    
+                    <!-- RUTA A: LIKES (Color Azul/Cyan - Lado Izquierdo del Reactor) -->
+                    <div class="animate-element opacity-0 translate-y-8 cyber-card neon-border-cyan p-8 md:p-12 rounded-2xl flex flex-col justify-between hover:scale-[1.02] duration-300 relative overflow-hidden group shadow-2xl">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-cyber-cyan/5 rounded-full blur-3xl group-hover:bg-cyber-cyan/10 transition-all duration-300"></div>
+                        <div class="space-y-6 relative z-10">
+                            <div class="flex justify-between items-center">
+                                <span class="font-mono text-xs text-cyber-cyan tracking-widest">[ RUTA A - VOTO MORAL ]</span>
+                                <span class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">NÚCLEO CYAN</span>
+                            </div>
+                            <h3 class="cyber-title text-2xl md:text-3xl text-white group-hover:text-cyber-cyan transition duration-300" data-i18n="sec3_likes_title">EL FILTRO DE LIKES (AZUL)</h3>
+                            <p class="text-base md:text-lg text-gray-300 leading-relaxed font-light animate-text" data-i18n="sec3_likes_desc">
+                                <strong>LIKE = SEGUIMOS EL CAMINO A.</strong> Decanta la balanza hacia la Ruta A del canon. Guía las decisiones directas, los dilemas morales del protagonista y el desarrollo de su personalidad hacia la redención.
+                            </p>
+                        </div>
+                        <div class="mt-12 flex justify-between items-center pt-6 border-t border-white/5 relative z-10">
+                            <span class="font-mono text-xs text-gray-400">STATUS:</span>
+                            <span class="font-mono text-sm text-cyber-cyan font-bold animate-pulse" data-i18n="sec3_likes_status">RUTA DE REDENCIÓN ACTIVA (68%)</span>
+                        </div>
+                    </div>
+
+                    <!-- RUTA B: SHARES (Color Naranja - Lado Derecho del Reactor) -->
+                    <div class="animate-element opacity-0 translate-y-8 cyber-card neon-border-orange p-8 md:p-12 rounded-2xl flex flex-col justify-between hover:scale-[1.02] duration-300 relative overflow-hidden group shadow-2xl">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-cyber-orange/5 rounded-full blur-3xl group-hover:bg-cyber-orange/10 transition-all duration-300"></div>
+                        <div class="space-y-6 relative z-10">
+                            <div class="flex justify-between items-center">
+                                <span class="font-mono text-xs text-cyber-orange tracking-widest">[ RUTA B - EXPANSIÓN ]</span>
+                                <span class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">NÚCLEO NARANJA</span>
+                            </div>
+                            <h3 class="cyber-title text-2xl md:text-3xl text-white group-hover:text-cyber-orange transition duration-300" data-i18n="sec3_shares_title">EL FILTRO DE SHARES (NARANJA)</h3>
+                            <p class="text-base md:text-lg text-gray-300 leading-relaxed font-light" data-i18n="sec3_shares_desc">
+                                <strong>SHARE = SEGUIMOS EL CAMINO B.</strong> Empuja el reactor hacia la Ruta B del canon. Desbloquea giros caóticos, abre portales dimensionales y desata amenazas imprevistas en la línea temporal.
+                            </p>
+                        </div>
+                        <div class="mt-12 flex justify-between items-center pt-6 border-t border-white/5 relative z-10">
+                            <span class="font-mono text-xs text-gray-400">STATUS:</span>
+                            <span class="font-mono text-sm text-cyber-orange font-bold animate-pulse" data-i18n="sec3_shares_status">AMENAZA CUÁNTICA INMINENTE (32%)</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: HACKEANDO LA 4ª PARED (Video: 6.0s - 8.0s - Swirling vortex de código y webframes) -->
+        <section id="section-4" class="scrolly-section min-h-[130vh] flex flex-col justify-center items-center px-6 md:px-12 relative border-b border-white/5 py-32 text-shield">
+            <div class="max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-12 xl:gap-20 items-center z-10 w-full">
+                
+                <div class="lg:col-span-5 order-2 lg:order-1 animate-element opacity-0 translate-y-8 w-full">
+                    <!-- Simulador de Ingestión en Tiempo Real de YouTube -->
+                    <div class="cyber-card border border-white/10 rounded-2xl overflow-hidden font-mono text-xs md:text-sm shadow-2xl">
+                        <div class="bg-white/5 px-6 py-4 flex items-center justify-between border-b border-white/10">
+                            <div class="flex space-x-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                                <span class="w-3 h-3 rounded-full bg-cyber-neon animate-pulse"></span>
+                            </div>
+                            <span class="text-xs text-gray-400 tracking-wider" data-i18n="sec4_terminal_desc">// CANAL DE COMENTARIOS YT EN VIVO</span>
+                        </div>
+                        <div class="p-6 bg-[#010103]/95 space-y-4">
+                            <!-- Stream simulador de comentarios reales de la IA -->
+                            <div id="youtube-mock-feed" class="border border-white/5 bg-black/60 rounded-lg p-4 h-56 overflow-y-auto text-xs md:text-sm text-gray-400 space-y-3">
+                                <!-- Cargando por JavaScript -->
+                            </div>
+                            
+                            <a href="https://youtube.com" target="_blank" class="block w-full py-4 bg-cyber-neon text-black font-mono font-bold text-center text-xs md:text-sm uppercase tracking-widest rounded-lg hover:shadow-[0_0_20px_#00ff00] transition duration-300 hover:scale-[1.01]" data-i18n="sec4_btn">
+                                Ir a Comentar en YouTube
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 order-1 lg:order-2 space-y-8 text-left">
+                    <h2 class="animate-element opacity-0 translate-y-8 cyber-title text-4xl sm:text-5xl md:text-6xl xl:text-7xl text-white leading-tight" data-i18n="sec4_h2">
+                        HACKEANDO LA <span class="text-cyber-neon neon-glow-green">4ª PARED</span>
+                    </h2>
+                    
+                    <p class="animate-element opacity-0 translate-y-8 text-lg sm:text-xl xl:text-2xl text-gray-200 leading-relaxed font-light" data-i18n="sec4_p1">
+                        No leemos bases de datos locales. Nuestra IA rastrea directamente la caja de comentarios de YouTube buscando teorías locas, conspiraciones y predicciones creadas por la comunidad.
+                    </p>
+                    <p class="animate-element opacity-0 translate-y-8 text-base xl:text-lg text-gray-400 leading-relaxed" data-i18n="sec4_p2">
+                        El protagonista tiene memoria episódica cuántica. Si dejas una teoría lo suficientemente descabellada o brillante en el último vídeo de YouTube, la IA adaptará el guion y el héroe podría quejarse o felicitarte directamente en el próximo capítulo.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECCIÓN 5: CONCLUSIÓN (Video: 8.0s - 10.0s - Bosque bioluminiscente de setas) -->
+        <section id="section-5" class="scrolly-section min-h-[130vh] flex flex-col justify-center items-center px-6 md:px-12 relative border-b border-white/5 py-32 text-shield">
+            <div class="max-w-5xl text-center z-10 space-y-10">
+                <h2 class="animate-element opacity-0 translate-y-8 cyber-title text-4xl sm:text-6xl md:text-7xl xl:text-8xl leading-tight" data-i18n="sec5_h2">
+                    ¿LISTO PARA SER EL<br><span class="text-cyber-cyan neon-glow-cyan">DIRECTOR?</span>
+                </h2>
+                
+                <p class="animate-element opacity-0 translate-y-8 text-lg sm:text-2xl xl:text-3xl text-gray-200 max-w-3xl mx-auto leading-relaxed font-light" data-i18n="sec5_p">
+                    Mundos autónomos renderizados en el clúster. El próximo episodio de nuestra Serie Viva ya se está escribiendo. Toma el control.
+                </p>
+
+                <!-- Botón Principal Premium con Brillo -->
+                <div class="animate-element opacity-0 translate-y-8 inline-block pt-4">
+                    <button class="relative group" onclick="openCyberModal('Iniciando Stream de Datos', 'Estás conectándote al servidor descentralizado Kaistu... Redirigiendo al primer capítulo de la animación viva.');">
+                        <div class="absolute -inset-1.5 bg-gradient-to-r from-cyber-neon to-cyber-cyan rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                        <div class="relative px-16 py-6 bg-black ring-1 ring-cyber-cyan/50 text-white font-mono uppercase text-sm md:text-base tracking-widest rounded-xl flex items-center space-x-4 hover:text-cyber-cyan duration-300">
+                            <svg class="w-6 h-6 text-cyber-cyan animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span data-i18n="sec5_btn">Ver Episodio 1</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mini footer incorporado -->
+            <footer class="absolute bottom-6 w-full text-center text-[10px] md:text-xs font-mono text-gray-600 tracking-wider">
+                &copy; 2026 KAISTU ANIME INC. MODEL AUTÓNOMO. TODOS LOS DERECHOS ALTERADOS POR EL USUARIO.
+            </footer>
+        </section>
+
+    </main>
+
+    <!-- Enlaces CDN obligatorios para GSAP y ScrollTrigger -->
+    <script src="js/gsap.min.js"></script>
+    <script src="js/ScrollTrigger.min.js"></script>
+
+    <script>
+        // Registrar el plugin ScrollTrigger en el núcleo de GSAP
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Referencias del DOM
+        const bgVideo = document.getElementById('bg-video');
+        const syncPercentage = document.getElementById('sync-percentage');
+        const frameCounter = document.getElementById('frame-counter');
+        const videoStateDot = document.getElementById('video-state-dot');
+        const verticalProgressBar = document.getElementById('vertical-progress-bar');
+        const progressIndicatorText = document.getElementById('progress-indicator-text');
+        const headerBadge = document.getElementById('header-badge');
+        const logoAccent = document.getElementById('logo-accent');
+        
+        // Loader elements
+        const loaderTerminal = document.getElementById('loader-terminal');
+        const loadProgressBar = document.getElementById('load-progress-bar');
+        const loadPercentage = document.getElementById('load-percentage');
+
+        // Modal Cyber
+        const cyberModal = document.getElementById('cyber-modal');
+        const modalContainer = document.getElementById('modal-container');
+        const modalTitle = document.getElementById('modal-title');
+        const modalText = document.getElementById('modal-text');
+
+        // Feed de comentarios mock de YouTube
+        const youtubeMockFeed = document.getElementById('youtube-mock-feed');
+
+        // Duración exacta del vídeo (10 segundos)
+        const videoDuration = 10; 
+        
+        // Estado del scroll y variables LERP para suavidad total del vídeo
+        let targetScrollProgress = 0;
+        let currentScrollProgress = 0;
+        let videoLoaded = false;
+        let currentLanguage = 'es';
+
+        // 1. DICCIONARIO INTERNACIONAL (ES, EN, JA)
+        const i18n = {
+            es: {
+                loader_title: '// SINCRO DE SISTEMA KAISTU',
+                loader_p1: 'Conectando con clúster cuántico...',
+                loader_p2: 'Inicializando interpolación de fotogramas...',
+                loader_p3: 'Precargando kaistu_core_bg.mp4...',
+                loader_progress_text: 'CALIBRANDO BUFFER DE SCROLL',
+                loader_boot: 'Estableciendo enlace neural',
+                nav_badge: '&alpha;',
+                nav_sync: 'SINCRO DE MOTOR',
+                nav_time: 'TIEMPO NÚCLEO',
+                nav_cta: 'Unirse a la Guerra',
+                sec1_badge: '[ SERIES VIVAS DE ANIME ]',
+                sec1_h1: 'BIENVENIDO A <span class="text-cyber-neon neon-glow-green">KAISTU</span>',
+                sec1_h2: 'Estudio de Animación Inteligente.',
+                sec1_p: '"No mires la historia. Créala."',
+                sec1_btn1: 'Suscríbete en YouTube',
+                sec1_btn2: 'Únete al Discord',
+                sec1_scroll: 'Sincronizar y bajar',
+                sec2_h2: 'TÚ ERES EL <span class="text-cyber-neon neon-glow-green">MOTOR</span>',
+                sec2_p1: 'El nivel de poder y las habilidades de nuestro protagonista están vinculados matemáticamente a nuestros suscriptores de YouTube. <strong>Si la comunidad crece, el héroe evoluciona.</strong>',
+                sec2_p2: 'Cada hito de suscripción desbloquea nuevas redes neuronales en nuestro clúster de renderizado, forzando a los guionistas a reescribir las capacidades del personaje en el próximo episodio en producción.',
+                sec2_card_title: 'Suscriptores de la Comunidad',
+                sec2_card_lvl: 'NIVEL DEL HÉROE',
+                sec2_card_btn: 'Simular Suscripción (+100)',
+                sec2_card_feedback: '¡SINCROESTRUCTURA ALCANZADA! +5 Puntos de Poder',
+                sec3_h2: 'LA GUERRA DEL <span class="text-cyber-cyan neon-glow-cyan">CANON</span>',
+                sec3_p: 'Al final de cada episodio, la historia se rompe. No hay decisiones correctas, solo la voluntad de la mayoría en una batalla directa de interacciones que alimentan nuestro reactor cuántico de renderizado.',
+                sec3_likes_title: 'EL FILTRO DE LIKES (AZUL)',
+                sec3_likes_desc: '<strong>LIKE = SEGUIMOS EL CAMINO A.</strong> Decanta la balanza hacia la Ruta A del canon. Guía las decisiones directas, los dilemas morales del protagonista y el desarrollo de su personalidad hacia la redención.',
+                sec3_likes_status: 'RUTA DE REDENCIÓN ACTIVA (68%)',
+                sec3_shares_title: 'EL FILTRO DE SHARES (NARANJA)',
+                sec3_shares_desc: '<strong>SHARE = SEGUIMOS EL CAMINO B.</strong> Empuja el reactor hacia la Ruta B del canon. Desbloquea giros caóticos, abre portales dimensionales y desata amenazas imprevistas en la línea temporal.',
+                sec3_shares_status: 'AMENAZA CUÁNTICA INMINENTE (32%)',
+                sec4_h2: 'HACKEANDO LA <span class="text-cyber-neon neon-glow-green">4ª PARED</span>',
+                sec4_p1: 'No leemos bases de datos locales. Nuestra IA rastrea directamente la caja de comentarios de YouTube buscando teorías locas, conspiraciones y predicciones creadas por la comunidad.',
+                sec4_p2: 'El protagonista tiene memoria episódica cuántica. Si dejas una teoría lo suficientemente descabellada o brillante en el último vídeo de YouTube, la IA adaptará el guion y el héroe podría quejarse o felicitarte directamente en el próximo capítulo.',
+                sec4_btn: 'Ir a Comentar en YouTube',
+                sec4_terminal_desc: '// CANAL DE COMENTARIOS YT EN VIVO',
+                sec5_h2: '¿LISTO PARA SER EL<br><span class="text-cyber-cyan neon-glow-cyan">DIRECTOR?</span>',
+                sec5_p: 'Mundos autónomos renderizados en el clúster. El próximo episodio de nuestra Serie Viva ya se está escribiendo. Toma el control.',
+                sec5_btn: 'Ver Episodio 1',
+                modal_title: 'Iniciando Stream de Datos',
+                modal_text: 'Estás conectándote al servidor descentralizado Kaistu... Redirigiendo al primer capítulo de la animación viva.',
+                modal_close: 'Confirmar Acceso'
+            },
+            en: {
+                loader_title: '// KAISTU SYSTEM SYNC',
+                loader_p1: 'Connecting to quantum cluster...',
+                loader_p2: 'Initializing frame interpolation...',
+                loader_p3: 'Preloading kaistu_core_bg.mp4...',
+                loader_progress_text: 'CALIBRATING SCROLL BUFFER',
+                loader_boot: 'Establishing neural link',
+                nav_badge: '&alpha;',
+                nav_sync: 'ENGINE SYNC',
+                nav_time: 'CORE TIME',
+                nav_cta: 'Join the War',
+                sec1_badge: '[ ALIVE ANIME SERIES ]',
+                sec1_h1: 'WELCOME TO <span class="text-cyber-neon neon-glow-green">KAISTU</span>',
+                sec1_h2: 'Intelligent Animation Studio.',
+                sec1_p: '"Don\'t watch the story. Create it."',
+                sec1_btn1: 'Subscribe on YouTube',
+                sec1_btn2: 'Join our Discord',
+                sec1_scroll: 'Sync & Scroll down',
+                sec2_h2: 'YOU ARE THE <span class="text-cyber-neon neon-glow-green">ENGINE</span>',
+                sec2_p1: 'The power level and abilities of our protagonist are mathematically linked to our YouTube subscribers. <strong>If the community grows, the hero evolves.</strong>',
+                sec2_p2: 'Each subscriber milestone unlocks new neural networks in our rendering cluster, forcing screenwriters to rewrite the character\'s abilities in the next episode in production.',
+                sec2_card_title: 'Community Subscribers',
+                sec2_card_lvl: 'HERO LEVEL',
+                sec2_card_btn: 'Simulate Subscription (+100)',
+                sec2_card_feedback: 'SYNCSTRUCTURE REACHED! +5 Power Points',
+                sec3_h2: 'THE <span class="text-cyber-cyan neon-glow-cyan">CANON</span> WAR',
+                sec3_p: 'At the end of each episode, the story breaks. There are no right decisions, only the will of the majority in a direct battle of interactions that feed our quantum rendering reactor.',
+                sec3_likes_title: 'THE LIKES FILTER (BLUE)',
+                sec3_likes_desc: '<strong>LIKE = WE FOLLOW PATH A.</strong> Tilts the balance toward Path A of the canon. Guides direct decisions, moral dilemmas of the protagonist, and character development toward redemption.',
+                sec3_likes_status: 'REDEMPTION PATH ACTIVE (68%)',
+                sec3_shares_title: 'THE SHARES FILTER (ORANGE)',
+                sec3_shares_desc: '<strong>SHARE = WE FOLLOW PATH B.</strong> Pushes the reactor toward Path B of the canon. Unlocks chaotic twists, opens dimensional rifts, and unleashes unexpected timeline threats.',
+                sec3_shares_status: 'IMMINENT QUANTUM THREAT (32%)',
+                sec4_h2: 'HACKING THE <span class="text-cyber-neon neon-glow-green">4TH WALL</span>',
+                sec4_p1: 'We don\'t read local databases. Our AI scans the YouTube comment section in real-time, hunting for wild theories, conspiracies, and fan predictions.',
+                sec4_p2: 'The protagonist has quantum episodic memory. Leave a wild or brilliant theory on our latest YouTube video; the AI will adapt the script, and the hero might complain or praise you in the next episode.',
+                sec4_btn: 'Go Comment on YouTube',
+                sec4_terminal_desc: '// LIVE YT COMMENTS INGEST',
+                sec5_h2: 'READY TO BE THE<br><span class="text-cyber-cyan neon-glow-cyan">DIRECTOR?</span>',
+                sec5_p: 'Autonomous worlds rendered on the cluster. The next episode of our Alive Series is already being written. Take control.',
+                sec5_btn: 'Watch Episode 1',
+                modal_title: 'Starting Data Stream',
+                modal_text: 'Connecting to Kaistu\'s decentralized server... Redirecting to the first episode of the alive animation.',
+                modal_close: 'Confirm Access'
+            },
+            ja: {
+                loader_title: '// KAISTU システム同期',
+                loader_p1: '量子クラスターに接続中...',
+                loader_p2: 'フレーム補間の初期化中...',
+                loader_p3: 'kaistu_core_bg.mp4 をプリロード中...',
+                loader_progress_text: 'スクロールバッファを調整中',
+                loader_boot: 'ニューラルリンクを確立中',
+                nav_badge: '&alpha;',
+                nav_sync: 'エンジン同期',
+                nav_time: 'コアタイム',
+                nav_cta: '戦争に参加する',
+                sec1_badge: '[ ライブアニメシリーズ ]',
+                sec1_h1: '<span class="text-cyber-neon neon-glow-green">KAISTU</span> へようこそ',
+                sec1_h2: 'インテリジェントアニメーションスタジオ。',
+                sec1_p: '「物語を見るな。創り出せ。」',
+                sec1_btn1: 'YouTubeでチャンネル登録',
+                sec1_btn2: 'Discordに参加する',
+                sec1_scroll: '同期してスクロールする',
+                sec2_h2: 'あなたが<span class="text-cyber-neon neon-glow-green">エンジン</span>だ',
+                sec2_p1: '主人公のパワーレベルとアビリティは、YouTubeのチャンネル登録者数と数学的に連動しています。<strong>コミュニティが成長すれば、ヒーローも進化します。</strong>',
+                sec2_p2: '登録者数のマイルストーンを達成するたびに、レンダリングクラスター内の新しいニューラルネットワークが解放され、制作中の次回エピソードでキャラクターの能力が書き換えられます。',
+                sec2_card_title: 'コミュニティチャンネル登録者数',
+                sec2_card_lvl: 'ヒーローレベル',
+                sec2_card_btn: '登録をシミュレート (+100)',
+                sec2_card_feedback: '同期構造達成！+5 パワーポイント',
+                sec3_h2: '<span class="text-cyber-cyan neon-glow-cyan">カノン</span>戦争',
+                sec3_p: '各エピソードの最後で、ストーリーは分岐します。正しい選択肢など存在しません。カノンレンダリングリアクターに燃料を供給する、インターアクティブな対決（Likes vs Shares）のみが運命を決めます。',
+                sec3_likes_title: 'LIKES フィルター (ブルー)',
+                sec3_likes_desc: '<strong>LIKE = ルートAを進む。</strong> カノンのルートAに天秤を傾けます。主人公の直接的な決断、道徳的ジレンマ、そして贖罪へのキャラクター成長を導きます。',
+                sec3_likes_status: '贖罪ルートアクティブ (68%)',
+                sec3_shares_title: 'SHARES フィルター (オレンジ)',
+                sec3_shares_desc: '<strong>SHARE = ルートBを進む。</strong> リアクターをカノンのルートBへと押し進めます。混沌とした展開を解放し、次元の裂け目を開き、予期せぬタイムラインの脅威を放ちます。',
+                sec3_shares_status: '量子的な脅威が切迫中 (32%)',
+                sec4_h2: '第<span class="text-cyber-neon neon-glow-green">4の壁</span>をハッキングする',
+                sec4_p1: 'ローカルなデータベースは読み込みません。私たちのAIはYouTubeのコメント欄を直接スキャンし、コミュニティが作成した斬新な理論、陰謀、予測を探索します。',
+                sec4_p2: '主人公は量子的なエピソード記憶を持っています。最新のYouTube動画に独創的な考察を残せば、AIが脚本を書き換え、次回作でヒーローがあなたに直接言及するかもしれません。',
+                sec4_btn: 'YouTubeで考察を投稿する',
+                sec4_terminal_desc: '// YouTubeコメントの同期中',
+                sec5_h2: '監督になる<br><span class="text-cyber-cyan neon-glow-cyan">準備はできたか？</span>',
+                sec5_p: 'クラスターでレンダリングされる自律的世界。ライブアニメの次回作はすでに生成されています。コントロールを握れ。',
+                sec5_btn: '第1話を見る',
+                modal_title: 'データストリーム開始',
+                modal_text: 'Kaistuの分散サーバーに接続中... ライブアニメーションの第1話へリダイレクトします。',
+                modal_close: 'アクセスを承認する'
+            }
+        };
+
+        // Comentarios simulados de YouTube por idioma
+        const ytCommentsMock = {
+            es: [
+                { user: "YT_USER_99", text: "¡Creo que el protagonista sabe que vive en un render de GPU!" },
+                { user: "CORTEX_AI", text: "Escaneando comentario... Añadiendo variable 'Auto-conciencia' al canon." },
+                { user: "AnimeGamer_es", text: "Espero que sigamos la Ruta A (Likes), prefiero la redención moral." },
+                { user: "Temporal_Rider", text: "Si el reactor explota en el capitulo 2 sería épico. Compartido." },
+                { user: "CORTEX_AI", text: "Ruta de Shares detectada. Inyectando 'Inestabilidad cuántica' en el clúster." }
+            ],
+            en: [
+                { user: "YT_USER_99", text: "I bet the hero knows he is animated by a quantum cluster!" },
+                { user: "CORTEX_AI", text: "Scanning comment... Injecting 'Self-awareness' variable." },
+                { user: "AnimeGamer_en", text: "We need to hit the Likes for Path A. The protagonist needs a redemptive arc." },
+                { user: "Temporal_Rider", text: "What if the reactor meltdown is triggered by a share spike? Let's go!" },
+                { user: "CORTEX_AI", text: "Shares vector received. Compiling 'Timeline Anomaly' parameters." }
+            ],
+            ja: [
+                { user: "YT_USER_99", text: "主人公は自分がGPUでレンダリングされていることに気づいているのでは！" },
+                { user: "CORTEX_AI", text: "コメントをスキャン中... カノンに「自己意識」変数を追加。" },
+                { user: "AnimeGamer_ja", text: "ルートA（Likes）に進んでほしい。主人公には贖罪の道を歩んでほしい。" },
+                { user: "Temporal_Rider", text: "Sharesが増えすぎてリアクターが暴走したら激アツ。拡散します。" },
+                { user: "CORTEX_AI", text: "拡散ベクトル検出。タイムライン異常パラメータの書き換え開始。" }
+            ]
+        };
+
+        // Función para cambiar idioma de forma interactiva
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Actualizar botones del selector de idioma
+            ['es', 'en', 'ja'].forEach(l => {
+                const btn = document.getElementById(`lang-${l}`);
+                if (l === lang) {
+                    btn.className = "px-2.5 py-1 rounded font-bold bg-cyber-neon text-black transition-all duration-300";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded text-gray-400 hover:text-white transition-all duration-300";
+                }
+            });
+
+            // Actualizar textos i18n
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (i18n[lang][key]) {
+                    element.innerHTML = i18n[lang][key];
+                }
+            });
+
+            // Regenerar el feed simulado de YouTube
+            generateMockFeed();
+        }
+
+        // Generar feed de simulación de YouTube comentarios
+        function generateMockFeed() {
+            youtubeMockFeed.innerHTML = '';
+            const comments = ytCommentsMock[currentLanguage];
+            comments.forEach((cmt, index) => {
+                setTimeout(() => {
+                    const line = document.createElement('div');
+                    if (cmt.user === "CORTEX_AI") {
+                        line.className = "text-cyber-cyan text-xs font-semibold animate-pulse";
+                        line.innerHTML = `&gt; ${cmt.user}: "${cmt.text}"`;
+                    } else {
+                        line.className = "text-white text-xs";
+                        line.innerHTML = `<span class="text-cyber-orange font-mono">${cmt.user}:</span> "${cmt.text}"`;
+                    }
+                    youtubeMockFeed.appendChild(line);
+                    youtubeMockFeed.scrollTop = youtubeMockFeed.scrollHeight;
+                }, index * 1000);
+            });
+        }
+
+
+        // 2. GESTOR DE CARGA E INICIALIZACIÓN
+        function simulateLoading() {
+            let count = 0;
+            const interval = setInterval(() => {
+                count += Math.floor(Math.random() * 15) + 5;
+                if (count >= 100) {
+                    count = 100;
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        loaderTerminal.classList.add('opacity-0', 'pointer-events-none');
+                        // Intento desbloquear reproducción del vídeo
+                        bgVideo.play().then(() => {
+                            bgVideo.pause();
+                        }).catch(e => console.log("La interacción del usuario activará la reproducción fina."));
+                        
+                        // Generar comentarios en la consola al iniciar
+                        generateMockFeed();
+                    }, 500);
+                }
+                loadPercentage.textContent = `${count}%`;
+                loadProgressBar.style.width = `${count}%`;
+            }, 30);
+        }
+
+        // Iniciar carga inmediatamente
+        simulateLoading();
+
+        bgVideo.addEventListener('loadedmetadata', () => {
+            videoLoaded = true;
+            bgVideo.currentTime = 0;
+        });
+
+
+        // 3. INTERPOLACIÓN LERP CON GSAP TICKER (SUAVIDAD PREMIUM PARA VÍDEO A 60FPS)
+        // Eliminamos el stuttering del scroll usando interpolación lineal fina sobre una propiedad virtual
+        let videoController = { time: 0 };
+
+        gsap.ticker.add(() => {
+            if (!videoLoaded && bgVideo.readyState >= 1) {
+                videoLoaded = true;
+            }
+            
+            // Interpolamos de forma matemática para eliminar cortes (Buttery Smooth)
+            currentScrollProgress += (targetScrollProgress - currentScrollProgress) * 0.06; // Ajuste óptimo a 60FPS
+            
+            if (videoLoaded) {
+                const targetTime = currentScrollProgress * videoDuration;
+                
+                // Setear el tiempo del vídeo suavizado
+                if (Math.abs(bgVideo.currentTime - targetTime) > 0.005) {
+                    if (bgVideo.readyState >= 2) {
+                        bgVideo.currentTime = targetTime;
+                    }
+                }
+                frameCounter.textContent = `${targetTime.toFixed(2)}s`;
+            }
+        });
+
+
+        // 4. CONFIGURACIÓN DEL SCROLLTRIGGER PRINCIPAL
+        const mainScroller = ScrollTrigger.create({
+            trigger: "body",
+            start: "top top",
+            end: "bottom bottom",
+            scrub: true,
+            onUpdate: (self) => {
+                // Sincroniza la variable que el ticker de GSAP interpola de forma fluida
+                targetScrollProgress = self.progress;
+
+                // Contadores del header
+                const currentPerc = Math.round(self.progress * 100);
+                syncPercentage.textContent = `${currentPerc}%`;
+                
+                // Barra de progreso vertical
+                verticalProgressBar.style.height = `${self.progress * 100}%`;
+                
+                // Actualizar estéticas adaptativas de colores según fase de vídeo
+                updateDynamicAesthetics(self.progress);
+            }
+        });
+
+        // Cambios estéticos adaptativos de colores basados en el frame del reactor o del mundo bio
+        function updateDynamicAesthetics(progress) {
+            if (progress < 0.20) {
+                progressIndicatorText.textContent = "Intro";
+                progressIndicatorText.style.color = "#00ff00";
+                headerBadge.style.color = "#00ff00";
+                headerBadge.style.borderColor = "rgba(0, 255, 0, 0.4)";
+                logoAccent.style.color = "#00ff00";
+                videoStateDot.className = "w-2.5 h-2.5 rounded-full bg-cyber-neon animate-pulse shadow-[0_0_10px_#00ff00]";
+            } else if (progress >= 0.20 && progress < 0.40) {
+                progressIndicatorText.textContent = currentLanguage === 'ja' ? "エンジン" : "Motor";
+                progressIndicatorText.style.color = "#00ff00";
+                logoAccent.style.color = "#00ff00";
+                videoStateDot.className = "w-2.5 h-2.5 rounded-full bg-cyber-neon animate-pulse shadow-[0_0_10px_#00ff00]";
+            } else if (progress >= 0.40 && progress < 0.60) {
+                progressIndicatorText.textContent = currentLanguage === 'ja' ? "カノン" : "Canon";
+                progressIndicatorText.style.color = "#00e5ff";
+                headerBadge.style.color = "#00e5ff";
+                headerBadge.style.borderColor = "rgba(0, 229, 255, 0.4)";
+                logoAccent.style.color = "#00e5ff";
+                videoStateDot.className = "w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-pulse shadow-[0_0_10px_#00e5ff]";
+            } else if (progress >= 0.60 && progress < 0.80) {
+                progressIndicatorText.textContent = "Cortex";
+                progressIndicatorText.style.color = "#00ff00";
+                headerBadge.style.color = "#00ff00";
+                headerBadge.style.borderColor = "rgba(0, 255, 0, 0.4)";
+                logoAccent.style.color = "#00ff00";
+                videoStateDot.className = "w-2.5 h-2.5 rounded-full bg-cyber-neon animate-pulse shadow-[0_0_10px_#00ff00]";
+            } else {
+                progressIndicatorText.textContent = currentLanguage === 'ja' ? "宇宙" : "Universo";
+                progressIndicatorText.style.color = "#bd00ff";
+                headerBadge.style.color = "#bd00ff";
+                headerBadge.style.borderColor = "rgba(189, 0, 255, 0.4)";
+                logoAccent.style.color = "#bd00ff";
+                videoStateDot.className = "w-2.5 h-2.5 rounded-full bg-cyber-cyan animate-pulse shadow-[0_0_10px_#00e5ff]";
+            }
+        }
+
+
+        // 5. ANIMACIONES DE APARICIÓN DE SECCIONES (FADE-IN / FADE-OUT)
+        const sections = gsap.utils.toArray('.scrolly-section');
+        const navDots = document.querySelectorAll('.dot-nav');
+
+        sections.forEach((section, index) => {
+            const elementsToAnimate = section.querySelectorAll('.animate-element');
+
+            gsap.fromTo(elementsToAnimate, 
+                { opacity: 0, y: 50, scale: 0.96 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    duration: 0.9,
+                    stagger: 0.15,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 75%",
+                        end: "bottom 25%",
+                        toggleActions: "play reverse play reverse",
+                        onEnter: () => updateActiveDot(index),
+                        onEnterBack: () => updateActiveDot(index)
+                    }
+                }
+            );
+        });
+
+        function updateActiveDot(activeIndex) {
+            navDots.forEach((dot, index) => {
+                if (index === activeIndex) {
+                    dot.className = "dot-nav w-3 h-3 rounded-full bg-cyber-neon border border-cyber-neon shadow-[0_0_10px_#00ff00] transition duration-300";
+                } else {
+                    dot.className = "dot-nav w-2 h-2 rounded-full bg-white/20 hover:bg-cyber-neon/50 transition duration-300";
+                }
+            });
+        }
+
+
+        // 6. CANVAS INTERACTIVO DE PARTÍCULAS REACTIVO
+        const canvas = document.getElementById('interactive-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.color = '#00ff00';
+                this.char = Math.random() > 0.5 ? '1' : '0';
+                this.opacity = Math.random() * 0.4 + 0.1;
+            }
+
+            update(phase) {
+                if (phase === 'matrix') {
+                    this.speedY = Math.random() * 2.5 + 1.2;
+                    this.speedX = 0;
+                    this.y += this.speedY;
+                    if (this.y > height) {
+                        this.y = 0;
+                        this.x = Math.random() * width;
+                    }
+                } else if (phase === 'reactor') {
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const dx = centerX - this.x;
+                    const dy = centerY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    this.speedX = (dx / distance) * 1.8 + (Math.random() - 0.5) * 0.4;
+                    this.speedY = (dy / distance) * 1.8 + (Math.random() - 0.5) * 0.4;
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    
+                    if (distance < 25) {
+                        this.reset();
+                    }
+                } else if (phase === 'vortex') {
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const angle = Math.atan2(this.y - centerY, this.x - centerX) + 0.025;
+                    const radius = Math.sqrt((this.x - centerX)**2 + (this.y - centerY)**2) - 0.6;
+                    
+                    if (radius < 10) {
+                        this.reset();
+                    } else {
+                        this.x = centerX + Math.cos(angle) * radius;
+                        this.y = centerY + Math.sin(angle) * radius;
+                    }
+                } else {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.x < 0 || this.x > width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > height) this.speedY *= -1;
+                }
+            }
+
+            draw(phase) {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                if (phase === 'matrix') {
+                    ctx.fillStyle = '#00ff00';
+                    ctx.font = '11px monospace';
+                    ctx.fillText(this.char, this.x, this.y);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    
+                    if (phase === 'reactor') {
+                        ctx.fillStyle = Math.random() > 0.5 ? '#ff6c00' : '#00e5ff';
+                    } else if (phase === 'vortex') {
+                        ctx.fillStyle = '#00ff00';
+                    } else if (phase === 'forest') {
+                        ctx.fillStyle = Math.random() > 0.5 ? '#bd00ff' : '#00e5ff';
+                    } else {
+                        ctx.fillStyle = '#00ff00';
+                    }
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(120, Math.floor(width / 10));
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            
+            let currentPhase = 'normal';
+            if (targetScrollProgress >= 0.20 && targetScrollProgress < 0.40) {
+                currentPhase = 'matrix';
+            } else if (targetScrollProgress >= 0.40 && targetScrollProgress < 0.60) {
+                currentPhase = 'reactor';
+            } else if (targetScrollProgress >= 0.60 && targetScrollProgress < 0.80) {
+                currentPhase = 'vortex';
+            } else if (targetScrollProgress >= 0.80) {
+                currentPhase = 'forest';
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update(currentPhase);
+                particles[i].draw(currentPhase);
+                
+                if (currentPhase === 'normal' || currentPhase === 'forest') {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            const strokeColor = currentPhase === 'forest' ? 'rgba(0, 229, 255, 0.04)' : 'rgba(0, 255, 0, 0.04)';
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+
+        initParticles();
+        animateCanvas();
+
+
+        // 7. MODALES Y DIÁLOGOS DE INTERFAZ PREMIUM
+        function openCyberModal(titleKey, textKey) {
+            // Actualizar modal dinámicamente según idioma
+            modalTitle.innerHTML = i18n[currentLanguage].modal_title;
+            modalText.innerHTML = i18n[currentLanguage].modal_text;
+            
+            cyberModal.classList.remove('opacity-0', 'pointer-events-none');
+            modalContainer.classList.remove('scale-95');
+            modalContainer.classList.add('scale-100');
+        }
+
+        function closeCyberModal() {
+            cyberModal.classList.add('opacity-0', 'pointer-events-none');
+            modalContainer.classList.add('scale-95');
+            modalContainer.classList.remove('scale-100');
+        }
+
+
+        // 8. INTERACTIVIDAD DE COMPONENTES
+        
+        // Puntero personalizado premium
+        const pointer = document.getElementById('custom-pointer');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(pointer, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.12,
+                ease: "power2.out"
+            });
+        });
+
+        // Hover reactivo para interactivos
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                let glowColor = '#00ff00';
+                if (targetScrollProgress >= 0.40 && targetScrollProgress < 0.60) glowColor = '#ff6c00';
+                if (targetScrollProgress >= 0.60) glowColor = '#00e5ff';
+                
+                gsap.to(pointer, { 
+                    width: 44, 
+                    height: 44, 
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                    borderColor: glowColor 
+                });
+            });
+            el.addEventListener('mouseleave', () => {
+                gsap.to(pointer, { 
+                    width: 16, 
+                    height: 16, 
+                    backgroundColor: 'transparent', 
+                    borderColor: '#00ff00' 
+                });
+            });
+        });
+
+        // Simulador de Suscriptores (Sección 2)
+        const simBtn = document.getElementById('sim-btn');
+        const subCounter = document.getElementById('sub-counter');
+        const levelProgressBar = document.getElementById('level-progress-bar');
+        const heroLevelTag = document.getElementById('hero-level-tag');
+        const simFeedback = document.getElementById('sim-feedback');
+        let countVal = 142850;
+        let pressCount = 0;
+
+        simBtn.addEventListener('click', () => {
+            countVal += 100;
+            pressCount++;
+            subCounter.textContent = countVal.toLocaleString('en-US');
+            
+            let baseWidth = 78 + pressCount * 2;
+            if (baseWidth > 100) baseWidth = 100;
+            levelProgressBar.style.width = `${baseWidth}%`;
+
+            if (baseWidth >= 85 && baseWidth < 100) {
+                heroLevelTag.textContent = "LVL 43 (PROTOTIPO)";
+                heroLevelTag.style.color = "#00e5ff";
+            } else if (baseWidth >= 100) {
+                heroLevelTag.textContent = "LVL 44 (CANON CORE)";
+                heroLevelTag.style.color = "#00ff00";
+                simBtn.disabled = true;
+                simBtn.textContent = currentLanguage === 'ja' ? "最大レベル到達" : "EVOLUCIÓN MÁXIMA";
+            }
+
+            simFeedback.style.opacity = '1';
+            gsap.fromTo(simFeedback, { scale: 0.95 }, { scale: 1, duration: 0.2 });
+            setTimeout(() => {
+                simFeedback.style.opacity = '0';
+            }, 1800);
+        });
+    </script>
+</body>
+</html>
